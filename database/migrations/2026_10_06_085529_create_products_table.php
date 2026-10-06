@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('Product', function (Blueprint $table) {
+        Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id')->constrained();
             $table->string('name');
             $table->string('description');
             $table->decimal('price');
-            $table->boolean('stock')->default(true);
-            $table->decimal('old_price');
+            $table->integer('stock')->default(0);
+            $table->decimal('old_price')->nullable();
+            $table->timestamps();
         });
     }
 
