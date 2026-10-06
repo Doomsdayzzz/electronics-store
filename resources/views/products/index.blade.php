@@ -148,6 +148,27 @@ header {
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
 
+        .product-image-wrapper {
+    width: 100%;
+            height: 180px;
+            border-radius: 8px;
+            /*overflow: hidden;*/
+            margin-bottom: 12px;
+            /*background-color: #f5f6fa;*/
+            text-align: center;
+        }
+
+        .product-image-wrapper img {
+            /*width: 100%;*/
+            height: 100%;
+            /*object-fit: cover;*/
+            transition: transform 0.3s;
+        }
+
+        .product-card:hover .product-image-wrapper img {
+    transform: scale(1.05);
+        }
+
         .product-category {
     font-size: 12px;
             color: #0984e3;
@@ -338,7 +359,7 @@ header {
 <header>
     <div class="header-inner">
         <div class="header-left">
-            <a href="{{ route('products.index') }}" class="logo">Электро<span>Маг</span></a>
+            <a href="{{ route('products.index') }}" class="logo">Цифро<span>Store</span></a>
             <div class="auth-links">
                 <a href="#">Войти</a>
                 <div class="auth-divider"></div>
@@ -348,7 +369,7 @@ header {
             </div>
         </div>
         <div class="header-right">
-            <button class="cart-btn" type="button" title="Корзина (заглушка)">
+            <button class="cart-btn" type="button" title="Корзина">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
@@ -368,6 +389,10 @@ header {
             @foreach($products as $product)
                 <article class="product-card">
                     <div class="product-category">{{ $product->category->name ?? 'Без категории' }}</div>
+                    <div class="product-image-wrapper">
+
+                        <img src="{{ $images->where('product_id', $product->id)->first()?->path ?? asset('/storage/images/no-image.jpg') }}" alt="{{ $product->name }}">
+                    </div>
                     <h2 class="product-name">{{ $product->name }}</h2>
                     <p class="product-description">{{ $product->description }}</p>
 

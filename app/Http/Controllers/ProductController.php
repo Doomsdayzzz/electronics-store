@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -19,8 +20,8 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(12);
-
-        return view('products.index', compact('products'));
+        $images = ProductImage::all();
+        return view('products.index', compact(['products', 'images']));
     }
 
     /**
