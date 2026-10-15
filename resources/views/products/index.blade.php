@@ -14,6 +14,7 @@
 
                         <img src="{{ $images->where('product_id', $product->id)->first()?->path ?? asset('/storage/images/no-image.jpg') }}" alt="{{ $product->name }}">
                     </div>
+                    <p class="product-id">#{{ $product->id }}</p>
                     <h2 class="product-name">{{ $product->name }}</h2>
                     <p class="product-description">{{ $product->description }}</p>
 
@@ -25,7 +26,7 @@
                     </div>
 
                     @if($product->stock)
-                        <button class="add-to-cart-btn" type="button" title="Заглушка">
+                        <button class="add-to-cart-btn" type="button" id="add-to-cart-{{$product->id}}">
                             Добавить в корзину
                         </button>
                     @else
@@ -71,3 +72,5 @@
 
 
 @endsection
+
+

@@ -195,7 +195,16 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-
+        .product-id {
+            font-size: 11px;
+            color: #636e72;
+            margin-bottom: 6px;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
         .product-prices {
             display: flex;
             align-items: baseline;
@@ -232,6 +241,19 @@
             background-color: #009e7f;
         }
 
+        .in-cart {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0);
+            color: #fff;
+            border: 1px solid #00b894;
+            padding: 10px;
+            border-radius: 8px;
+            color: #007a5e;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
         .out-of-stock {
             background-color: #dfe6e9;
             color: #b2bec3;
@@ -542,6 +564,10 @@
                     <a href="#" class="auth-trigger" data-modal="register-modal">Регистрация</a>
                 @else
                     <a href="#"><span>{{auth()->user()->name}}</span></a>
+                    @if(auth()->user()->is_admin)
+                        <div class="auth-divider"></div>
+                        <a href="{{route('admin.dashboard')}}">Админка</a>
+                    @endif
                     <div class="auth-divider"></div>
                     <a href="{{route('logout')}}">Выйти</a>
 

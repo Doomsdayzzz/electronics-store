@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProductStoreRequest;
+use App\Http\Requests\ProductUpdateRequest;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -35,9 +39,26 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ProductStoreRequest $request)
     {
-        //
+        $validated = $request->validated();
+        $product = Product::query()->create($validated);
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->storeAs(
+                'images/' . $product->id,
+                $request->file('image')->getClientOriginalName(),
+                'public'
+            );
+            ProductImage::query()->create(
+                [
+                    'product_id' => $product->id,
+                    'path' => '/storage/' . $path,
+                    'is_main' => true
+                ]
+            );
+            return redirect()->route('dashboard')->with('success', 'Товар добавлен');
+        }
+
     }
 
     /**
@@ -59,9 +80,29 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(ProductUpdateRequest $request, Product $product)
     {
-        //
+        $validated = $request->validated();
+        $product->update($validated);
+        if ($request->hasFile('image')) {
+            // Удаляем старые изображения и папку
+            Storage::disk('public')->deleteDirectory('images/' . $product->id);
+            ProductImage::where('product_id', $product->id)->delete();
+
+            $path = $request->file('image')->storeAs(
+                'images/' . $product->id,
+                $request->file('image')->getClientOriginalName(),
+                'public'
+            );
+
+            ProductImage::create([
+                'product_id' => $product->id,
+                'path'       => '/storage/' . $path,
+                'is_main'    => true,
+            ]);
+        }
+
+        return redirect()->route('admin.dashboard')->with('success', 'Товар обновлён');
     }
 
     /**
@@ -69,6 +110,10 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        Product::destroy($product->id);
+        ProductImage::destroy($product->id);
+        Storage::deleteDirectory('/public/storage/images/' . $product->id);
+
+        return redirect()->route('admin.dashboard')->with('success', 'Товар удалён');
     }
 }
