@@ -73,4 +73,103 @@
 
 @endsection
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btns = document.querySelectorAll('[id^="add-to-cart-"]');
 
+        // ID товаров в корзине из БД (для авторизованных) или из localStorage (для гостей)
+        const cartFromServer = @json($cartProductIds ?? []);
+        const isAuthorized = {{ auth()->check() ? 'true' : 'false' }};
+
+        function getCartFromStorage() {
+            const ids = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('id-product-')) {
+                    ids.push(localStorage.getItem(key));
+                }
+            }
+            return ids;
+        }
+
+        function isInCart(productId) {
+            if (isAuthorized) {
+                return cartFromServer.includes(String(productId));
+            }
+            return localStorage.getItem('id-product-' + productId) !== null;
+        }
+
+        function syncCartToServer(productIds) {
+            if (productIds.length === 0) return;
+
+            fetch('/cart/sync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({ products: productIds })
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    console.log('Корзина синхронизирована:', data.items_count, 'товаров');
+                }
+            })
+            .catch(err => {
+                console.error('Ошибка синхронизации:', err);
+            });
+        }
+
+        btns.forEach(btn => {
+            const id = btn.id.slice(12);
+
+            // Проверяем, есть ли товар в корзине (из БД или localStorage)
+            if (isInCart(id)) {
+                btn.textContent = 'В корзине';
+                btn.classList.add('in-cart');
+            }
+
+            btn.addEventListener('click', function() {
+                if (isAuthorized) {
+                    // Для авторизованных — работаем с БД
+                    const currentCart = [...cartFromServer];
+                    const index = currentCart.indexOf(id);
+
+                    if (index === -1) {
+                        currentCart.push(id);
+                        btn.textContent = 'В корзине';
+                        btn.classList.add('in-cart');
+                    } else {
+                        currentCart.splice(index, 1);
+                        btn.textContent = 'Добавить в корзину';
+                        btn.classList.remove('in-cart');
+                    }
+
+                    syncCartToServer(currentCart);
+                } else {
+                    // Для гостей — работаем с localStorage
+                    if (!localStorage.getItem('id-product-' + id)) {
+                        localStorage.setItem('id-product-' + id, id);
+                        btn.textContent = 'В корзине';
+                        btn.classList.add('in-cart');
+                    } else {
+                        localStorage.removeItem('id-product-' + id);
+                        btn.textContent = 'Добавить в корзину';
+                        btn.classList.remove('in-cart');
+                    }
+
+                    const currentCart = getCartFromStorage();
+                    syncCartToServer(currentCart);
+                }
+            });
+        });
+    });
+</script>

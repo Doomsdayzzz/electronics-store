@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\Login;
 use App\Http\Controllers\Auth\Register;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Middleware\IsAdmin;
@@ -16,6 +17,10 @@ Route::resource('users', UserController::class)->middleware(IsAdmin::class);
 Route::post('/register', Register::class)->name('register');
 Route::post('/login', [Login::class, 'login'])->name('login');
 Route::get('/logout', [Login::class, 'logout'])->name('logout');
+
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/sync', [CartController::class, 'sync'])->name('cart.sync');
+Route::post('/cart/merge', [CartController::class, 'merge'])->name('cart.merge');
 
 Route::get('admin/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard')
     ->middleware(IsAdmin::class);

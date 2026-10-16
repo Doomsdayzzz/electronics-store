@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductStoreRequest;
 use App\Http\Requests\ProductUpdateRequest;
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
@@ -25,7 +27,19 @@ class ProductController extends Controller
 
         $products = $query->paginate(12);
         $images = ProductImage::all();
-        return view('products.index', compact(['products', 'images']));
+
+        // Получаем ID товаров в корзине
+        $cartProductIds = [];
+        if (auth()->check()) {
+            $cart = Cart::where('user_id', auth()->id())->first();
+            if ($cart) {
+                $cartProductIds = CartItem::where('cart_id', $cart->id)
+                    ->pluck('product_id')
+                    ->toArray();
+            }
+        }
+
+        return view('products.index', compact(['products', 'images', 'cartProductIds']));
     }
 
     /**

@@ -596,6 +596,7 @@
 
         <form method="POST" action="{{route('login')}}" class="auth-form ajax-form" novalidate>
             @csrf
+            <input type="hidden" name="cart_products" id="login-cart-products" value="">
             <div class="form-group">
                 <label class="form-label" for="login-email">Email</label>
                 <input id="login-email" type="email" name="email" class="form-input" required>
@@ -720,6 +721,19 @@
                 form.querySelectorAll('.form-error').forEach(el => el.textContent = '');
                 form.querySelectorAll('.form-input').forEach(el => el.classList.remove('is-invalid'));
 
+                // Для формы логина — добавляем корзину из localStorage
+                const cartProductsInput = form.querySelector('#login-cart-products');
+                if (cartProductsInput) {
+                    const cartIds = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key.startsWith('id-product-')) {
+                            cartIds.push(localStorage.getItem(key));
+                        }
+                    }
+                    cartProductsInput.value = JSON.stringify(cartIds);
+                }
+
                 try {
                     const response = await fetch(form.action, {
                         method: 'POST',
@@ -735,7 +749,15 @@
                     const data = await response.json().catch(() => ({}));
 
                     if (response.ok) {
-                        // Успех — перезагружаем страницу, чтобы обновить шапку
+                        // Успех — очищаем localStorage и перезагружаем страницу
+                        if (form.id === 'login-form' || cartProductsInput) {
+                            // Очищаем localStorage после успешного входа
+                            Object.keys(localStorage).forEach(key => {
+                                if (key.startsWith('id-product-')) {
+                                    localStorage.removeItem(key);
+                                }
+                            });
+                        }
                         window.location.reload();
                         return;
                     }
