@@ -109,6 +109,21 @@
             height: 18px;
         }
 
+        .cart-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            background: #fff;
+            color: #0984e3;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 4px;
+        }
+
         /* ===== Layout ===== */
         .container {
             max-width: 1280px;
@@ -195,6 +210,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
         .product-id {
             font-size: 11px;
             color: #636e72;
@@ -205,6 +221,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
         .product-prices {
             display: flex;
             align-items: baseline;
@@ -254,6 +271,7 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
+
         .out-of-stock {
             background-color: #dfe6e9;
             color: #b2bec3;
@@ -575,14 +593,17 @@
             </div>
         </div>
         <div class="header-right">
-            <button class="cart-btn" type="button" title="Корзина">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                     stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                Корзина
-            </button>
+            <a href="{{route('cart.index')}}" style="text-decoration: none">
+                <button class="cart-btn" type="button" title="Корзина">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                         stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Корзина
+                    <span class="cart-badge" id="cart-badge" style="display:none">0</span>
+                </button>
+            </a>
         </div>
     </div>
 </header>
@@ -661,6 +682,39 @@
 
 
 <script>
+    //загрузка значка кол-ва товаров корзины ГЛОБАЛЬНО
+    window.refreshCartBadge = async function () {
+        const badge = document.getElementById('cart-badge');
+        if (!badge) return;
+
+        const isAuthed = {{ auth()->check() ? 'true' : 'false' }};
+        let count = 0;
+
+        if (isAuthed) {
+            try {
+                const res = await fetch('{{ route('cart.getById') }}', {
+                    headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
+                });
+                const data = await res.json();
+                count = (data.product_ids || []).length;
+            } catch (e) {
+                console.error('Не удалось получить корзину', e);
+            }
+        } else {
+            for (let i = 0; i < localStorage.length; i++) {
+                if (localStorage.key(i).startsWith('id-product-')) count++;
+            }
+        }
+
+        if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'inline-flex';
+        } else {
+            badge.textContent = '0';
+            badge.style.display = 'none';
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         const overlays = document.querySelectorAll('.modal-overlay');
 
@@ -783,7 +837,12 @@
                 }
             });
         });
+        window.refreshCartBadge();
+
+
     });
+
+
 </script>
 
 </body>

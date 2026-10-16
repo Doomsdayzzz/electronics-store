@@ -13,7 +13,7 @@ class CartController extends Controller
     /**
      * Получить текущую корзину (для отображения на странице)
      */
-    public function index(): JsonResponse
+    public function getById(): JsonResponse
     {
         $cartIds = [];
 
@@ -27,6 +27,33 @@ class CartController extends Controller
         }
 
         return response()->json(['product_ids' => $cartIds]);
+    }
+
+    /**
+     * Удаление товара из корзины
+     */
+    public function remove(Request $request): JsonResponse
+    {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Необходима авторизация'], 401);
+        }
+
+        $productId = $request->input('product_id');
+
+        $cart = Cart::where('user_id', auth()->id())->first();
+
+        if (!$cart) {
+            return response()->json(['success' => true]);
+        }
+
+        $deleted = CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $productId)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'deleted' => $deleted,
+        ]);
     }
 
     /**
@@ -120,5 +147,35 @@ class CartController extends Controller
             'message' => 'Корзина объединена',
             'items_count' => count($productIds),
         ]);
+    }
+    /**
+     * Получить полные данные товаров гостевой корзины по ID
+     * (эндпоинт не требует авторизации)
+     */
+    public function guestDetails(Request $request): JsonResponse
+    {
+        $ids = $request->input('products', []);
+
+        if (empty($ids)) {
+            return response()->json(['items' => []]);
+        }
+
+        $products = Product::with(['category', 'images'])
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        $items = [];
+        foreach ($ids as $id) {
+            if (isset($products[$id])) {
+                $items[] = [
+                    'product'  => $products[$id],
+                    'quantity' => 1,
+                    'price'    => (float) $products[$id]->price,
+                ];
+            }
+        }
+
+        return response()->json(['items' => $items]);
     }
 }

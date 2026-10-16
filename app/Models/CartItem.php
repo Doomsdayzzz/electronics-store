@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['id', 'card_id', 'product_id', 'quantity', 'price'])]
+#[Fillable(['id', 'cart_id', 'product_id', 'quantity', 'price'])]
 class CartItem extends Model
 {
     public function cart(): BelongsTo

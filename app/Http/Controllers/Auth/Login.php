@@ -73,6 +73,7 @@ class Login extends Controller
                 $existing->quantity += 1;
                 $existing->save();
             } else {
+                Log::info($cart->id);
                 CartItem::create([
                     'cart_id' => $cart->id,
                     'product_id' => $product->id,
@@ -89,10 +90,10 @@ class Login extends Controller
         return redirect()->intended('/products');
     }
 
-    public function GetCarts(Request $request){
-        $userId = User::where('email', $request->email)->first()->id;
-        $carts = Cart::where('user_id', $userId)->get();
-        $cartsItems = CartItem::where('cart_id', $carts->id)->get();
-
-    }
+//    public function GetCarts(Request $request){
+//        $userId = User::where('email', $request->email)->first()->id;
+//        $carts = Cart::where('user_id', $userId)->get();
+//        $cartsItems = CartItem::where('cart_id', $carts->id)->get();
+//
+//    }
 }

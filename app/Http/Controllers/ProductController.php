@@ -70,8 +70,8 @@ class ProductController extends Controller
                     'is_main' => true
                 ]
             );
-            return redirect()->route('dashboard')->with('success', 'Товар добавлен');
         }
+        return redirect()->route('admin.dashboard')->with('success', 'Товар добавлен');
 
     }
 
@@ -126,7 +126,7 @@ class ProductController extends Controller
     {
         Product::destroy($product->id);
         ProductImage::destroy($product->id);
-        Storage::deleteDirectory('/public/storage/images/' . $product->id);
+        Storage::disk('public')->deleteDirectory('images/' . $product->id);
 
         return redirect()->route('admin.dashboard')->with('success', 'Товар удалён');
     }

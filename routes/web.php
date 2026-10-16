@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\Login;
 use App\Http\Controllers\Auth\Register;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CartPageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Middleware\IsAdmin;
@@ -18,9 +19,14 @@ Route::post('/register', Register::class)->name('register');
 Route::post('/login', [Login::class, 'login'])->name('login');
 Route::get('/logout', [Login::class, 'logout'])->name('logout');
 
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::get('/cart/getById', [CartController::class, 'getById'])->name('cart.getById');
 Route::post('/cart/sync', [CartController::class, 'sync'])->name('cart.sync');
+Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
 Route::post('/cart/merge', [CartController::class, 'merge'])->name('cart.merge');
+Route::post('/cart/guest-details', [CartController::class, 'guestDetails'])
+    ->name('cart.guest.details');
+
+Route::get('/cart', [CartPageController::class, 'index'])->name('cart.index');
 
 Route::get('admin/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard')
     ->middleware(IsAdmin::class);
