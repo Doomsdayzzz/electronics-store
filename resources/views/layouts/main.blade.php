@@ -582,11 +582,15 @@
                     <a href="#" class="auth-trigger" data-modal="register-modal">Регистрация</a>
                 @else
                     <a href="#"><span>{{auth()->user()->name}}</span></a>
+                    @if(!(auth()->user()->is_admin))
+                        <div class="auth-divider"></div>
+                        <a href="{{ route('orders.my') }}">Мои заказы</a>
+                    @endif
                     @if(auth()->user()->is_admin)
                         <div class="auth-divider"></div>
                         <a href="{{route('admin.dashboard')}}">Админка</a>
+                        <a href="{{ route('admin.orders.index') }}">Все заказы</a>
                     @endif
-                    <div class="auth-divider"></div>
                     <a href="{{route('logout')}}">Выйти</a>
 
                 @endif

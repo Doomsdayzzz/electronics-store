@@ -1,58 +1,153 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ЦифроStore
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Интернет-магазин электроники на Laravel 13: каталог с категориями и фильтрами, корзина
+(работает и без авторизации, и с ней), оформление заказов, админ-панель.
 
-## About Laravel
+Проект учебно-портфолийный: вся бизнес-логика — в контроллерах, без сервисного слоя
+и без тестов домена. Подробности и честный список недоработок — в
+[docs/known-issues.md](docs/known-issues.md).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Возможности
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Каталог** — пагинация (12 товаров на страницу), фильтр по категории, отображение
+  цены, старой цены и остатка; товар без остатка помечается «Нет в наличии».
+- **Регистрация и вход** — через модальные окна в шапке, AJAX-отправка без перезагрузки.
+- **Корзина** — гостевая хранится в `localStorage`, пользовательская — в БД
+  (`carts` / `cart_items`); при входе гостевая корзина автоматически сливается
+  с серверной.
+- **Заказы** — оформление из корзины в одной транзакции, список своих заказов,
+  карточка заказа, админский список всех заказов.
+- **Админ-панель** — дашборд с поиском и фильтрами по товарам, CRUD товаров с
+  загрузкой фотографий, список пользователей.
+- **Роли** — пользователь и администратор, различаются полем `users.is_admin`.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Стек
 
-## Learning Laravel
+| Слой | Технология |
+| --- | --- |
+| Язык | PHP `^8.3` (проверено на 8.3.33) |
+| Фреймворк | Laravel `^13.17` |
+| БД | SQLite (`database/database.sqlite`) |
+| Шаблоны | Blade |
+| Сборка | Vite `^8`, Tailwind CSS `^4` (см. предупреждение ниже) |
+| Авторизация | сессии, middleware `App\Http\Middleware\IsAdmin` |
+| Тесты | PHPUnit `^12.5` |
+| Стиль кода | Laravel Pint |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+> **Важно про фронтенд.** Vite и Tailwind подключены и собираются, но **ни один шаблон
+> не содержит директиву `@vite`**. Вся вёрстка и весь JavaScript написаны инлайном прямо
+> в `.blade.php` (в `layouts/main.blade.php` — около 560 строк CSS и 160 строк JS).
+> Запуск `npm run dev` / `npm run build` на текущий результат не влияет.
+> Подробнее — [docs/development.md](docs/development.md#фронтенд).
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Требования
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- PHP 8.3+ с расширениями `pdo_sqlite`, `mbstring`, `openssl`, `fileinfo`
+- Composer 2.x
+- Node.js 20+ и npm (только если планируется работа с ассетами — см. предупреждение выше)
+- Расширение GD или Imagick не требуется — загрузка изображений идёт без ресайза
 
-## Agentic Development
+## Быстрый старт
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+```powershell
+# 1. Зависимости PHP
+composer install
 
-```bash
-composer require laravel/boost --dev
+# 2. Окружение
+copy .env.example .env
+php artisan key:generate
 
-php artisan boost:install
+# 3. Файл базы данных (в git не попадает — см. database/.gitignore)
+New-Item -ItemType File database\database.sqlite
+
+# 4. Схема и демо-данные
+php artisan migrate
+php artisan db:seed
+
+# 5. Симлинк public/storage → storage/app/public (без него не покажутся фото товаров)
+php artisan storage:link
+
+# 6. Запуск
+php artisan serve            # http://localhost:8000
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Всё в одну команду есть в `composer setup`, но учтите: он выполняет
+`migrate --force`, собирает ассеты (которые не используются) и требует `npm`.
 
-## Contributing
+## Демо-доступы
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Создаются сидером `UserSeeder`:
 
-## Code of Conduct
+| Роль | Email | Пароль |
+| --- | --- | --- |
+| Пользователь | `user1@ya.ru` | `1234` |
+| Администратор | `admin1@ya.ru` | `132456` |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Сидер также наполняет каталог: 7 категорий и 10 товаров (смартфоны, ноутбуки,
+наушники, планшеты, колонки, фотокамеры, клавиатуры).
 
-## Security Vulnerabilities
+## Команды
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Команда | Что делает |
+| --- | --- |
+| `php artisan serve` | Встроенный веб-сервер на `:8000` |
+| `php artisan migrate` | Применить миграции |
+| `php artisan migrate:fresh --seed` | Пересоздать БД и заполнить демо-данными |
+| `php artisan db:seed` | Только сидеры |
+| `php artisan storage:link` | Создать симлинк `public/storage` |
+| `php artisan route:list` | Список маршрутов |
+| `php artisan test` | PHPUnit |
+| `vendor/bin/pint` | Форматирование кода по стилю Laravel |
+| `vendor/bin/pail` | Просмотр логов в терминале |
+| `php artisan tinker` | REPL |
+| `composer dev` | `php artisan dev` (dev-команда проекта) |
 
-## License
+## Структура проекта
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+app/
+  Http/Controllers/
+    ProductController.php      каталог + CRUD товаров
+    CartController.php         AJAX-корзина (sync / remove / merge / getById / guest-details)
+    CartPageController.php     страница корзины
+    OrderController.php        оформление и просмотр заказов
+    Auth/Login.php             вход, выход, слияние гостевой корзины
+    Auth/Register.php          регистрация (invokable)
+    Admin/DashboardController.php  админ-дашборд
+    Users/UserController.php   REST-заготовка пользователей (реализован только store)
+  Http/Requests/               валидация форм
+  Http/Middleware/IsAdmin.php  проверка is_admin
+  Models/                      Category, Product, ProductImage, User, Cart, CartItem, Order, OrderItem
+database/
+  migrations/                  8 миграций (плюс sessions/cache/jobs отсутствуют)
+  seeders/                     CategorySeeder, ProductSeeder, UserSeeder
+resources/views/
+  layouts/main.blade.php       шапка, модалки входа/регистрации, скрипт счётчика корзины
+  products/index.blade.php     каталог + логика кнопки «в корзину»
+  cart/index.blade.php         страница корзины и оформление заказа
+  orders/                      список и карточка заказов пользователя
+  admin/                       дашборд и заказы администратора
+routes/web.php                 все маршруты (32)
+```
+
+## Документация
+
+| Документ | О чём |
+| --- | --- |
+| [docs/architecture.md](docs/architecture.md) | Слои, доменная модель, поток запросов, устройство корзины, права |
+| [docs/database.md](docs/database.md) | Схема БД: 8 таблиц, поля, связи, сидеры |
+| [docs/routes.md](docs/routes.md) | Полный справочник маршрутов и JSON-эндпоинтов |
+| [docs/development.md](docs/development.md) | Настройка, команды, соглашения, добавление фич |
+| [docs/known-issues.md](docs/known-issues.md) | Найденные баги и недоработки — **прочитайте перед правками** |
+
+Для ИИ-агентов: правила работы с проектом — в [AGENTS.md](AGENTS.md).
+
+## Тесты
+
+```bash
+php artisan test
+```
+
+На данный момент проходит 1 тест из 2: `tests/Feature/ExampleTest.php` проверяет
+ответ `200` на `/`, но такого маршрута в проекте нет, поэтому падает с 404.
+Описание причин — в [docs/known-issues.md](docs/known-issues.md#1-нет-маршрута-home).
