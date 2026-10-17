@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\Login;
 use App\Http\Controllers\Auth\Register;
 use App\Http\Controllers\CartController;
@@ -9,6 +10,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Middleware\IsAdmin;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/', fn () => redirect()->route('products.index'))->name('home');
 
 Route::resource('products', ProductController::class)->only(['index', 'show']);
 Route::middleware([IsAdmin::class])->group(function () {
@@ -29,7 +32,7 @@ Route::post('/cart/guest-details', [CartController::class, 'guestDetails'])
 
 Route::get('/cart', [CartPageController::class, 'index'])->name('cart.index');
 
-Route::get('admin/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard')
+Route::get('admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard')
     ->middleware(IsAdmin::class);
 
 Route::middleware('auth')->group(function () {

@@ -127,7 +127,7 @@ resources/views/
   cart/index.blade.php         страница корзины и оформление заказа
   orders/                      список и карточка заказов пользователя
   admin/                       дашборд и заказы администратора
-routes/web.php                 все маршруты (32)
+routes/web.php                 все маршруты (33)
 ```
 
 ## Документация
@@ -148,6 +148,14 @@ routes/web.php                 все маршруты (32)
 php artisan test
 ```
 
-На данный момент проходит 1 тест из 2: `tests/Feature/ExampleTest.php` проверяет
-ответ `200` на `/`, но такого маршрута в проекте нет, поэтому падает с 404.
-Описание причин — в [docs/known-issues.md](docs/known-issues.md#1-нет-маршрута-home).
+11 тестов, все проходят. Покрыты главная страница и каталог, все четыре ветки
+разграничения доступа (гость HTML, гость JSON, пользователь, администратор),
+удаление товара вместе с изображениями и фильтры каталога.
+
+Состав: `tests/Feature/ExampleTest.php`, `tests/Feature/AdminAccessTest.php`,
+`tests/Feature/ProductAdminTest.php`, `tests/Unit/ExampleTest.php`.
+
+Важно: `User::factory()->create()` в этом проекте не работает — фабрика не
+совпадает со схемой таблицы `users`, поэтому тесты создают пользователей
+напрямую. Подробности — в
+[docs/known-issues.md](docs/known-issues.md#24-userfactory-несовместима-со-схемой-users).
